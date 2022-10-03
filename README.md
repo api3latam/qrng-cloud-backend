@@ -1,2 +1,2 @@
-# qrng-cloud-backend
-Lambda environments for serverless services for QRNG Platform
+# QRNG Cloud Backend
+Node functionalities for serverless services from QRNG Platform
