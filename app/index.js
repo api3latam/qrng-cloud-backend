@@ -2,7 +2,7 @@ import { getContract } from "./contracts";
 import { contractAddresses } from "./network";
 import { getAddresses } from "./firebase";
 
-const main = async () => {
+exports.handler = async (event, context) => {
     console.log('Starting process...\n')
     const networkNames = Object.keys(contractAddresses);
     for (let i=0; i < networkNames.length; i++) {
@@ -20,5 +20,3 @@ const main = async () => {
     }
     console.log('Finished minting for all networks!\n');
 };
-
-main();
