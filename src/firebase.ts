@@ -25,6 +25,7 @@ export async function getAddresses(networkName) {
   const results = await firestore
     .collection("users")
     .where("signature", "array-contains", networkName)
+    .limit(10)
     .get();
   let output = new Array();
   results.forEach(doc => {
