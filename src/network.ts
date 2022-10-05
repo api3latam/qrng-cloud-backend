@@ -1,10 +1,10 @@
 import { providers,
     Wallet } from "ethers";
 
-export async function getSigner() {
+export async function getSigner(networkName) {
     require("dotenv").config();
     try {
-        const rpc = process.env[`${process.env['NETWORK']}_URL`];
+        const rpc = process.env[`${networkName}_URL`];
         const provider = new providers.JsonRpcProvider(rpc);
         const pk = process.env['WALLET_PK'] || "";
         const wallet = new Wallet(pk, provider);
@@ -13,3 +13,10 @@ export async function getSigner() {
         console.error(err);
     }
 };
+
+export const contractAddresses = {
+    goerli: "0x759934c1BA49D14B4961c7B7fde86948160a4359",
+    arbitru: "",
+    polygon: "",
+    rsk: ""
+}
