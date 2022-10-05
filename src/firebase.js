@@ -54,10 +54,11 @@ export async function getAddresses(networkName) {
   }
 }
 
-export async function setMintingState(network) {
+export async function setMintingState(targetAddress, network) {
   try {
     await firestore
       .collection("users")
+      .doc(targetAddress)
       .update(networkUpdate(network));
   } catch (err) {
     console.error(err);

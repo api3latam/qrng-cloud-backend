@@ -18,7 +18,7 @@ const handler = async (event, context) => {
                 console.log(`Minting for ${address}\n`);
                 // let tx = await contract.requestToken(address);
                 //  await tx.wait();
-                await setMintingState();
+                await setMintingState(address, network);
             }
             console.log(`Done for network: ${network}\n`);
         } catch (err) {
