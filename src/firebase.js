@@ -21,15 +21,45 @@ if (!firebase.apps.length) {
 
 const firestore = firebase.firestore();
 
+const networkUpdate = (networkName) => {
+  if (networkName === "rsk") {
+      return { 'minted.rsk': true }
+  } else if (networkName === "polygon") {
+      return { 'minted.polygon': true }
+  } else if (networkName === "ethereum") {
+      return { 'minted.ethereum': true }
+  } else if (networkName === "arbitrum") {
+      return { 'minted.arbitrum': true }
+  } else if (networkName === "goerli") {
+      return { 'minted.goerli': true }
+  } else {
+      throw Error(`The given network ${networkName} is not available`);
+  }
+}
+
 export async function getAddresses(networkName) {
-  const results = await firestore
-    .collection("users")
-    .where("signature", "array-contains", networkName)
-    .limit(10)
-    .get();
-  let output = new Array();
-  results.forEach(doc => {
-    output.push(doc.id);
-  });
-  return output;
+  try {
+    const results = await firestore
+      .collection("users")
+      .where(`signature.${networkName}`, "!=", "")
+      .limit(10)
+      .get();
+    let output = new Array();
+    results.forEach(doc => {
+      output.push(doc.id);
+    });
+    return output;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+export async function setMintingState(network) {
+  try {
+    await firestore
+      .collection("users")
+      .update(networkUpdate(network));
+  } catch (err) {
+    console.error(err);
+  }
 }

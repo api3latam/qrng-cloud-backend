@@ -1,6 +1,8 @@
+import { exit } from "process";
 import { getContract } from  "./contracts.js";
 import { contractAddresses } from "./network.js";
-import { getAddresses } from "./firebase.js";
+import { getAddresses, 
+    setMintingState } from "./firebase.js";
 
 const handler = async (event, context) => {
     console.log('Starting process...\n')
@@ -16,6 +18,7 @@ const handler = async (event, context) => {
                 console.log(`Minting for ${address}\n`);
                 // let tx = await contract.requestToken(address);
                 //  await tx.wait();
+                await setMintingState();
             }
             console.log(`Done for network: ${network}\n`);
         } catch (err) {
