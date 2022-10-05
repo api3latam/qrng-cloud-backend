@@ -1,12 +1,11 @@
-import { providers,
-    Wallet } from "ethers";
+import { providers, Wallet } from "ethers";
+import { getEnvVars } from "./utils.js";
 
 export async function getSigner(networkName) {
-    require("dotenv").config();
     try {
-        const rpc = process.env[`${networkName}_URL`];
+        const rpc = getEnvVars(`${networkName.toUpperCase()}_URL`);
         const provider = new providers.JsonRpcProvider(rpc);
-        const pk = process.env['WALLET_PK'] || "";
+        const pk = getEnvVars('WALLET_PK');
         const wallet = new Wallet(pk, provider);
         return wallet;
     } catch (err) {

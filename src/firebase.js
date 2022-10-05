@@ -3,7 +3,7 @@ import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 
-import { getEnvVars } from "./utils";
+import { getEnvVars } from "./utils.js";
 
 const firebaseConfig = {
   apiKey: getEnvVars('FIREBASE_API'),

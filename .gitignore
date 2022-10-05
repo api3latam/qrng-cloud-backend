@@ -4,9 +4,13 @@
 .pnp.js
 package-lock.json
 yarn.lock
+pnpm-lock.yaml
 
 # testing
 /coverage
+
+# env
+*.env
 
 # debug
 npm-debug.log*

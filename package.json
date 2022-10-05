@@ -4,6 +4,7 @@
     "description": "Automation functionalities for serverless contract interaction",
     "author": "API3 Latam",
     "license": "MIT",
+    "type": "module",
     "devDependencies": {
       "ethers": "^5.7.1",
       "@firebase/app": "^0.7.33",

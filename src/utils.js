@@ -1,6 +1,8 @@
-export function getEnvVars(targetKey: string) {
+import * as dotenv from 'dotenv';
+
+export function getEnvVars(targetKey) {
     try {
-        require("dotenv").config();
+        dotenv.config();
         return process.env[targetKey] || "";
     } catch (err) {
         console.error(err);
