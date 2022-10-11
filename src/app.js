@@ -10,14 +10,14 @@ const handler = async (event, context) => {
     for (let i=0; i < networkNames.length; i++) {
         try {
             let network = networkNames[i];
-            // let contract = await getContract(network);
+            let contract = await getContract(network);
             let addressesArray = await getAddresses(network);
             console.log(`Doing network: ${network}\n`);
             for (let i=0; i < addressesArray.length; i++) {
                 let address = addressesArray[i];
                 console.log(`Minting for ${address}\n`);
-                // let tx = await contract.requestToken(address);
-                //  await tx.wait();
+                let tx = await contract.requestToken(address);
+                await tx.wait();
                 await setMintingState(address, network);
             }
             console.log(`Done for network: ${network}\n`);

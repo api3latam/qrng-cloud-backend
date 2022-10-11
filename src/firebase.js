@@ -22,12 +22,10 @@ if (!firebase.apps.length) {
 const firestore = firebase.firestore();
 
 const networkUpdate = (networkName) => {
-  if (networkName === "rsk") {
-      return { 'minted.rsk': true }
+  if (networkName === "optimism") {
+      return { 'minted.optimism': true }
   } else if (networkName === "polygon") {
       return { 'minted.polygon': true }
-  } else if (networkName === "ethereum") {
-      return { 'minted.ethereum': true }
   } else if (networkName === "arbitrum") {
       return { 'minted.arbitrum': true }
   } else if (networkName === "goerli") {
@@ -42,12 +40,15 @@ export async function getAddresses(networkName) {
     const results = await firestore
       .collection("users")
       .where(`signature.${networkName}`, "!=", "")
+      .where(`minted.${networkName}`, "==", false)
       .limit(10)
       .get();
     let output = new Array();
-    results.forEach(doc => {
-      output.push(doc.id);
-    });
+    if (!results.empty) {
+      results.forEach(doc => {
+        output.push(doc.id);
+      });
+    };
     return output;
   } catch (err) {
     console.error(err);
@@ -63,4 +64,5 @@ export async function setMintingState(targetAddress, network) {
   } catch (err) {
     console.error(err);
   }
-}
+};
+

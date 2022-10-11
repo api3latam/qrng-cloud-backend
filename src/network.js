@@ -14,8 +14,8 @@ export async function getSigner(networkName) {
 };
 
 export const contractAddresses = {
-    goerli: "0x759934c1BA49D14B4961c7B7fde86948160a4359",
+    goerli: "0x961F8787035c2280479589DaB31BdD7186a8B577",
     arbitrum: "",
     polygon: "",
-    rsk: ""
+    optimism: ""
 }
