@@ -28,8 +28,6 @@ const networkUpdate = (networkName) => {
       return { 'minted.polygon': true }
   } else if (networkName === "arbitrum") {
       return { 'minted.arbitrum': true }
-  } else if (networkName === "goerli") {
-      return { 'minted.goerli': true }
   } else {
       throw Error(`The given network ${networkName} is not available`);
   }
