@@ -14,6 +14,7 @@ const main = async () => {
             let addressesArray = await getAddresses(network);
             console.log(`Doing network: ${network}\n`);
             for (let i=0; i < addressesArray.length; i++) {
+                let txHash;
                 let address = addressesArray[i];
                 console.log(`Minting for ${address}\n`);
                 if (network === "polygon") {
@@ -24,13 +25,15 @@ const main = async () => {
                             gasPrice: utils.parseUnits("250", "gwei"),
                         }
                     );
-                    await tx.wait();
+                    let receipt = await tx.wait();
+                    txHash = receipt.transactionHash;
                 }
                 else {
                     let tx = await contract.requestToken(address);
-                    await tx.wait();
+                    let receipt = await tx.wait();
+                    txHash = receipt.transactionHash;
                 }
-                await firebaseWorkflow(address, network, tx.transactionHash);
+                await firebaseWorkflow(address, network, txHash);
             }
             console.log(`Done for network: ${network}\n`);
         } catch (err) {

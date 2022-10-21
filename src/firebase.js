@@ -20,7 +20,7 @@ if (!firebase.apps.length) {
 }
 
 const firestore = firebase.firestore();
-const enableGoerli = getEnvVars("ENABLE_TEST") === "true" ? true: false;
+const enableGoerli = getEnvVars("ENABLE_TEST") === "true" ? true : false;
 
 const networkUpdate = (networkName) => {
   if (networkName === "optimism") {
@@ -36,44 +36,44 @@ const networkUpdate = (networkName) => {
   }
 }
 
-const addressNetwork = (networkName, hash, currentDate) => {
+const addressNetwork = (networkName, currentDate) => {
   if (networkName === "optimism") {
-    return { "optimism": [{txHash: hash, minted: currentDate}] }
-  } else if (networkNmae === "polygon") {
-    return {"polygon": [{txHash: hash, minted: currentDate}]}
+    return { "optimism": [{minted: currentDate}] }
+  } else if (networkName === "polygon") {
+    return {"polygon": [{minted: currentDate}]}
   } else if (networkName === "arbitrum") {
-    return {"arbitrum": [{txHash: hash, minted: currentDate}]}
+    return {"arbitrum": [{minted: currentDate}]}
   } else if (networkName === "goerli" && enableGoerli) {
-    return {"goerli": [{txHash: hash, minted: currentDate}]}
+    return {"goerli": [{minted: currentDate}]}
   } else {
     throw Error(`The given network ${networkName} is not available`);
   }
 }
 
-const appendAddress = (networkName, hash, currentDate) => {
+const appendAddress = (networkName, currentDate) => {
   if (networkName === "optimism") {
     return { 
       lastMinted: currentDate,
       "network.optimism": firebase.firestore.FieldValue.arrayUnion(
-        [{txHash: hash, minted: currentDate}])
+        [{minted: currentDate}])
       }
-  } else if (networkNmae === "polygon") {
+  } else if (networkName === "polygon") {
     return { 
       lastMinted: currentDate,
       "network.polygon": firebase.firestore.FieldValue.arrayUnion(
-        [{txHash: hash, minted: currentDate}])
+        [{minted: currentDate}])
       }
   } else if (networkName === "arbitrum") {
     return { 
       lastMinted: currentDate,
       "network.arbitrum": firebase.firestore.FieldValue.arrayUnion(
-        [{txHash: hash, minted: currentDate}])
+        [{minted: currentDate}])
       }
   } else if (networkName === "goerli" && enableGoerli) {
     return { 
       lastMinted: currentDate,
       "network.goerli": firebase.firestore.FieldValue.arrayUnion(
-        [{txHash: hash, minted: currentDate}])
+        [{minted: currentDate}])
       }
   } else {
     throw Error(`The given network ${networkName} is not available`);
@@ -111,8 +111,7 @@ async function setMintingState(targetAddress, network) {
   }
 };
 
-async function setMintingData(
-  targetAddress, network, txHash) {
+async function setMintingData(targetAddress, network) {
   try {
     const [ dockExists, networkExists ] =
       await verifyExistence(targetAddress, network);
@@ -123,7 +122,7 @@ async function setMintingData(
         .doc(targetAddress)
         .set({
           lastMinted: date,
-          network: addressNetwork(network, txHash, date)
+          network: addressNetwork(network, date)
         })
     } else if (dockExists && !networkExists) {
       await firestore
@@ -131,29 +130,28 @@ async function setMintingData(
         .doc(targetAddress)
         .update({
           lastMinted: date,
-          network: addressNetwork(network, txHash, date)
+          network: addressNetwork(network, date)
         })
     } else if (dockExists && networkExists) {
       await firestore
         .collection("address")
         .doc(targetAddress)
-        .update(appendAddress(network, txHash, date))
+        .update(appendAddress(network, date))
     }
   } catch (err) {
     console.error(err);
   }
 };
 
-export async function firebaseWorkflow (
-  address, networkName, hash) {
+export async function firebaseWorkflow (address, networkName) {
   await setMintingState(address, networkName);
-  await setMintingData(address, networkName, hash);
+  await setMintingData(address, networkName);
 }
 
 async function verifyExistence(address, network) {
   let dockExistence = false;
   let networkExistence = false;
-  const doc = await firestoreClient
+  const doc = await firestore
       .collection("address")
       .doc(address)
       .get();
