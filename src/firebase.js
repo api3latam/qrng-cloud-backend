@@ -38,13 +38,25 @@ const networkUpdate = (networkName) => {
 
 const addressNetwork = (networkName, currentDate) => {
   if (networkName === "optimism") {
-    return { "optimism": [{minted: currentDate}] }
+    return { 
+      lastMinted: currentDate,
+      "optimism": [currentDate] 
+    }
   } else if (networkName === "polygon") {
-    return {"polygon": [{minted: currentDate}]}
+    return {
+      lastMinted: currentDate,
+      "polygon": [currentDate]
+    }
   } else if (networkName === "arbitrum") {
-    return {"arbitrum": [{minted: currentDate}]}
+    return {
+      lastMinted: currentDate,
+      "arbitrum": [currentDate]
+    }
   } else if (networkName === "goerli" && enableGoerli) {
-    return {"goerli": [{minted: currentDate}]}
+    return {
+      lastMinted: currentDate,
+      "goerli": [currentDate]
+    }
   } else {
     throw Error(`The given network ${networkName} is not available`);
   }
@@ -54,26 +66,26 @@ const appendAddress = (networkName, currentDate) => {
   if (networkName === "optimism") {
     return { 
       lastMinted: currentDate,
-      "network.optimism": firebase.firestore.FieldValue.arrayUnion(
-        [{minted: currentDate}])
+      "optimism": firebase.firestore.FieldValue.arrayUnion(
+        [currentDate])
       }
   } else if (networkName === "polygon") {
     return { 
       lastMinted: currentDate,
-      "network.polygon": firebase.firestore.FieldValue.arrayUnion(
-        [{minted: currentDate}])
+      "polygon": firebase.firestore.FieldValue.arrayUnion(
+        [currentDate])
       }
   } else if (networkName === "arbitrum") {
     return { 
       lastMinted: currentDate,
-      "network.arbitrum": firebase.firestore.FieldValue.arrayUnion(
-        [{minted: currentDate}])
+      "arbitrum": firebase.firestore.FieldValue.arrayUnion(
+        [currentDate])
       }
   } else if (networkName === "goerli" && enableGoerli) {
     return { 
       lastMinted: currentDate,
-      "network.goerli": firebase.firestore.FieldValue.arrayUnion(
-        [{minted: currentDate}])
+      "goerli": firebase.firestore.FieldValue.arrayUnion(
+        [currentDate])
       }
   } else {
     throw Error(`The given network ${networkName} is not available`);
@@ -120,18 +132,12 @@ async function setMintingData(targetAddress, network) {
       await firestore
         .collection("address")
         .doc(targetAddress)
-        .set({
-          lastMinted: date,
-          network: addressNetwork(network, date)
-        })
+        .set(addressNetwork(network, date))
     } else if (dockExists && !networkExists) {
       await firestore
         .collection("address")
         .doc(targetAddress)
-        .update({
-          lastMinted: date,
-          network: addressNetwork(network, date)
-        })
+        .update(addressNetwork(network, date))
     } else if (dockExists && networkExists) {
       await firestore
         .collection("address")
@@ -158,7 +164,7 @@ async function verifyExistence(address, network) {
   if (doc.exists) {
       dockExistence = true;
       networkExistence = 
-          doc.data()['network'][network] === undefined
+          doc.data()[network] === undefined
           ? false
           : true;
   }
