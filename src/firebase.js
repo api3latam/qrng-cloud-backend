@@ -33,6 +33,38 @@ const networkUpdate = (networkName) => {
   }
 }
 
+const addressNetwork = (networkName, hash, currentDate) => {
+  if (networkName === "optimism") {
+    return { "optimism": [{txHash: hash, minted: currentDate}] }
+  } else if (networkNmae === "polygon") {
+    return {"polygon": [{txHash: hash, minted: currentDate}]}
+  } else if (networkName === "arbitrum") {
+    return {"arbitrum": [{txHash: hash, minted: currentDate}]}
+  }
+}
+
+const appendAddress = (networkName, hash, currentDate) => {
+  if (networkName === "optimism") {
+    return { 
+      lastMinted: currentDate,
+      "network.optimism": firebase.firestore.FieldValue.arrayUnion(
+        [{txHash: hash, minted: currentDate}])
+      }
+  } else if (networkNmae === "polygon") {
+    return { 
+      lastMinted: currentDate,
+      "network.polygon": firebase.firestore.FieldValue.arrayUnion(
+        [{txHash: hash, minted: currentDate}])
+      }
+  } else if (networkName === "arbitrum") {
+    return { 
+      lastMinted: currentDate,
+      "network.arbitrum": firebase.firestore.FieldValue.arrayUnion(
+        [{txHash: hash, minted: currentDate}])
+      }
+  }
+}
+
 export async function getAddresses(networkName) {
   try {
     const results = await firestore
@@ -53,7 +85,7 @@ export async function getAddresses(networkName) {
   }
 }
 
-export async function setMintingState(targetAddress, network) {
+async function setMintingState(targetAddress, network) {
   try {
     await firestore
       .collection("users")
@@ -62,5 +94,61 @@ export async function setMintingState(targetAddress, network) {
   } catch (err) {
     console.error(err);
   }
+};
+
+async function setMintingData(
+  targetAddress, network, txHash) {
+  try {
+    const [ dockExists, networkExists ] =
+      await verifyExistence(targetAddress, network);
+    const date = Date.now();
+    if (!dockExists) {
+      await firestore
+        .collection("address")
+        .doc(targetAddress)
+        .set({
+          lastMinted: date,
+          network: addressNetwork(network, txHash, date)
+        })
+    } else if (dockExists && !networkExists) {
+      await firestore
+        .collection("address")
+        .doc(targetAddress)
+        .update({
+          lastMinted: date,
+          network: addressNetwork(network, txHash, date)
+        })
+    } else if (dockExists && networkExists) {
+      await firestore
+        .collection("address")
+        .doc(targetAddress)
+        .update(appendAddress(network, txHash, date))
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export async function firebaseWorkflow (
+  address, networkName, hash) {
+  await setMintingState(address, networkName);
+  await setMintingData(address, networkName, hash);
+}
+
+async function verifyExistence(address, network) {
+  let dockExistence = false;
+  let networkExistence = false;
+  const doc = await firestoreClient
+      .collection("address")
+      .doc(address)
+      .get();
+  if (doc.exists) {
+      dockExistence = true;
+      networkExistence = 
+          doc.data()['network'][network] === undefined
+          ? false
+          : true;
+  }
+  return [ dockExistence, networkExistence ];
 };
 

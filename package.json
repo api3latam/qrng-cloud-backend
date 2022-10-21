@@ -1,17 +1,15 @@
 {
-    "name": "qrng-cloud-backend",
-    "version": "1.0.0",
-    "description": "Automation functionalities for serverless contract interaction",
-    "author": "API3 Latam",
-    "license": "MIT",
-    "type": "module",
-    "devDependencies": {
-      "ethers": "^5.7.1",
-      "@firebase/app": "^0.7.33",
-      "firebase": "^9.10.0",
-      "firebase-tools": "^11.13.0"
-    },
-    "dependencies": {
-      "dotenv": "^16.0.2"
-    }
+  "name": "qrng-cloud-backend",
+  "version": "1.0.0",
+  "description": "Automation functionalities for serverless contract interaction",
+  "author": "API3 Latam",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "ethers": "^5.7.1",
+    "firebase": "^9.10.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
   }
+}
