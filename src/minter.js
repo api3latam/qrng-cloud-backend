@@ -33,7 +33,7 @@ const main = async () => {
                     let receipt = await tx.wait();
                     txHash = receipt.transactionHash;
                 }
-                await firebaseWorkflow(address, network, txHash);
+                await firebaseWorkflow(address, network);
             }
             console.log(`Done for network: ${network}\n`);
         } catch (err) {

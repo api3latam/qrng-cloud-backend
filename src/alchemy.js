@@ -1,8 +1,6 @@
-import { Network, Alchemy } from "alchemy-sdk";
-import { utils } from "ethers";
-import { contractAddresses } from "./network.js";
+import { Network } from "alchemy-sdk";
 
-const alchemyConfigs = (networkName) => {
+export const alchemyConfigs = (networkName) => {
     if (networkName === "polygon") {
         return { apiKey: process.env['NEXT_PUBLIC_POLYGON'],
             network: Network.MATIC_MAINNET }
@@ -17,27 +15,19 @@ const alchemyConfigs = (networkName) => {
     }
 };
 
-export async function getTokenIds(userAddress, network) {
-    const alchemy = new Alchemy(alchemyConfigs(network));
+export async function getTokenIds(userAddress, alchemyClient, contractAddress) {
 
-    const contractAddr = utils.getAddress(contractAddresses[network]);
-
-    const nftsForOwner = await alchemy.nft.getNftsForOwner({
+    const nftsForOwner = await alchemyClient.nft.getNftsForOwner({
         owner: userAddress,
-        contractAddresses: [contractAddr]
+        contractAddresses: [contractAddress]
     });
     const ownedNfts = nftsForOwner.ownedNfts;
-    
-    const filter = ownedNfts.filter((token) => {
-        if (utils.getAddress(token.contract.address) === contractAddr) {
-            return token
-        }
-    });
-
-    const output = filter.map((token) => {
-        return token.tokenId 
-    });
-
-    output.reverse()
+    const output = ownedNfts.map((token) => {
+        return {
+            id: token.tokenId,
+            uri: token.tokenUri.raw,
+            minted: timeLastUpdated
+        } 
+    })
     return output;
 };

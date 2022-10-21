@@ -106,7 +106,7 @@ export async function getAddresses(networkName) {
   } catch (err) {
     console.error(err);
   }
-}
+};
 
 async function setMintingState(targetAddress, network) {
   try {
@@ -121,7 +121,7 @@ async function setMintingState(targetAddress, network) {
 
 async function setMintingData(targetAddress, network) {
   try {
-    const [ dockExists, networkExists ] =
+    const [ dockExists, networkExists, _ ] =
       await verifyExistence(targetAddress, network);
     const date = Date.now();
     if (!dockExists) {
@@ -167,3 +167,30 @@ async function verifyExistence(address, network) {
   return [ dockExistence, networkExistence ];
 };
 
+export async function getTimestamps() {
+  let pendingAddress = {
+    "polygon": [],
+    "optimism": [],
+    "arbitrum": [],
+    "goerli": []
+  }
+  const docs = await firestore
+    .collection("address")
+    .limit(25)
+    .get();
+  
+  docs.forEach(doc => {
+    const dictKeys = Object.keys(doc.data());
+    if ("polygon" in dictKeys) {
+      pendingAddress["polygon"].append(doc.id);
+    } else if ("optimism" in dictKeys) {
+      pendingAddress["optimism"].apend(doc.id);
+    } else if ("arbitrum" in dictKeys) {
+      pendingAddress["arbitrum"].apend(doc.id);
+    } else if ("goerli" in dictKeys && enableGoerli) {
+      pendingAddress["goerli"].append(doc.id);
+    }
+  });
+
+  return [docs, pendingAddress];
+}
