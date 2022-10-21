@@ -20,6 +20,7 @@ if (!firebase.apps.length) {
 }
 
 const firestore = firebase.firestore();
+const enableGoerli = getEnvVars("ENABLE_TEST") === "true" ? true: false;
 
 const networkUpdate = (networkName) => {
   if (networkName === "optimism") {
@@ -28,6 +29,8 @@ const networkUpdate = (networkName) => {
       return { 'minted.polygon': true }
   } else if (networkName === "arbitrum") {
       return { 'minted.arbitrum': true }
+  } else if (networkName === "goerli" && enableGoerli) {
+      return { 'minted.goerli': true }
   } else {
       throw Error(`The given network ${networkName} is not available`);
   }
@@ -40,6 +43,10 @@ const addressNetwork = (networkName, hash, currentDate) => {
     return {"polygon": [{txHash: hash, minted: currentDate}]}
   } else if (networkName === "arbitrum") {
     return {"arbitrum": [{txHash: hash, minted: currentDate}]}
+  } else if (networkName === "goerli" && enableGoerli) {
+    return {"goerli": [{txHash: hash, minted: currentDate}]}
+  } else {
+    throw Error(`The given network ${networkName} is not available`);
   }
 }
 
@@ -62,6 +69,14 @@ const appendAddress = (networkName, hash, currentDate) => {
       "network.arbitrum": firebase.firestore.FieldValue.arrayUnion(
         [{txHash: hash, minted: currentDate}])
       }
+  } else if (networkName === "goerli" && enableGoerli) {
+    return { 
+      lastMinted: currentDate,
+      "network.goerli": firebase.firestore.FieldValue.arrayUnion(
+        [{txHash: hash, minted: currentDate}])
+      }
+  } else {
+    throw Error(`The given network ${networkName} is not available`);
   }
 }
 

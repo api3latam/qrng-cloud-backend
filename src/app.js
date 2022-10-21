@@ -2,10 +2,9 @@ import { exit } from "process";
 import { utils } from "ethers";
 import { getContract } from  "./contracts.js";
 import { contractAddresses } from "./network.js";
-import { firebaseWorkflow, getAddresses, 
-    setMintingState } from "./firebase.js";
+import { firebaseWorkflow, getAddresses } from "./firebase.js";
 
-const handler = async (event, context) => {
+const main = async () => {
     console.log('Starting process...\n')
     const networkNames = Object.keys(contractAddresses);
     for (let i=0; i < networkNames.length; i++)  {
@@ -43,4 +42,4 @@ const handler = async (event, context) => {
     exit(0);
 };
 
-handler(null, null);
+main();
