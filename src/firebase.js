@@ -66,26 +66,22 @@ const appendAddress = (networkName, currentDate) => {
   if (networkName === "optimism") {
     return { 
       lastMinted: currentDate,
-      "optimism": firebase.firestore.FieldValue.arrayUnion(
-        [currentDate])
+      "optimism": firebase.firestore.FieldValue.arrayUnion(currentDate)
       }
   } else if (networkName === "polygon") {
     return { 
       lastMinted: currentDate,
-      "polygon": firebase.firestore.FieldValue.arrayUnion(
-        [currentDate])
+      "polygon": firebase.firestore.FieldValue.arrayUnion(currentDate)
       }
   } else if (networkName === "arbitrum") {
     return { 
       lastMinted: currentDate,
-      "arbitrum": firebase.firestore.FieldValue.arrayUnion(
-        [currentDate])
+      "arbitrum": firebase.firestore.FieldValue.arrayUnion(currentDate)
       }
   } else if (networkName === "goerli" && enableGoerli) {
     return { 
       lastMinted: currentDate,
-      "goerli": firebase.firestore.FieldValue.arrayUnion(
-        [currentDate])
+      "goerli": firebase.firestore.FieldValue.arrayUnion(currentDate)
       }
   } else {
     throw Error(`The given network ${networkName} is not available`);
