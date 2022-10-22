@@ -36,53 +36,23 @@ const networkUpdate = (networkName) => {
   }
 }
 
-const addressNetwork = (networkName, currentDate) => {
+const metadataSet = (networkName, timestamp, tokenData) => {
   if (networkName === "optimism") {
-    return { 
-      lastMinted: currentDate,
-      "optimism": [currentDate] 
-    }
-  } else if (networkName === "polygon") {
-    return {
-      lastMinted: currentDate,
-      "polygon": [currentDate]
-    }
+    return timestamp >= 0 
+      ? { lastMinted: timestamp, optimism: tokenData }
+      : { optimism: tokenData };
   } else if (networkName === "arbitrum") {
-    return {
-      lastMinted: currentDate,
-      "arbitrum": [currentDate]
-    }
-  } else if (networkName === "goerli" && enableGoerli) {
-    return {
-      lastMinted: currentDate,
-      "goerli": [currentDate]
-    }
-  } else {
-    throw Error(`The given network ${networkName} is not available`);
-  }
-}
-
-const appendAddress = (networkName, currentDate) => {
-  if (networkName === "optimism") {
-    return { 
-      lastMinted: currentDate,
-      "optimism": firebase.firestore.FieldValue.arrayUnion(currentDate)
-      }
+    return timestamp >= 0 
+      ? { lastMinted: timestamp, arbitrum: tokenData }
+      : { arbitrum: tokenData };
   } else if (networkName === "polygon") {
-    return { 
-      lastMinted: currentDate,
-      "polygon": firebase.firestore.FieldValue.arrayUnion(currentDate)
-      }
-  } else if (networkName === "arbitrum") {
-    return { 
-      lastMinted: currentDate,
-      "arbitrum": firebase.firestore.FieldValue.arrayUnion(currentDate)
-      }
+    return timestamp >= 0 
+      ? { lastMinted: timestamp, polygon: tokenData }
+      : { polygon: tokenData }
   } else if (networkName === "goerli" && enableGoerli) {
-    return { 
-      lastMinted: currentDate,
-      "goerli": firebase.firestore.FieldValue.arrayUnion(currentDate)
-      }
+    return timestamp >= 0 
+      ? { lastMinted: timestamp, goerli: tokenData }
+      : { goerli: tokenData }
   } else {
     throw Error(`The given network ${networkName} is not available`);
   }
@@ -108,7 +78,7 @@ export async function getAddresses(networkName) {
   }
 };
 
-async function setMintingState(targetAddress, network) {
+export async function setMintingState(targetAddress, network) {
   try {
     await firestore
       .collection("users")
@@ -119,54 +89,6 @@ async function setMintingState(targetAddress, network) {
   }
 };
 
-async function setMintingData(targetAddress, network) {
-  try {
-    const [ dockExists, networkExists, _ ] =
-      await verifyExistence(targetAddress, network);
-    const date = Date.now();
-    if (!dockExists) {
-      await firestore
-        .collection("address")
-        .doc(targetAddress)
-        .set(addressNetwork(network, date))
-    } else if (dockExists && !networkExists) {
-      await firestore
-        .collection("address")
-        .doc(targetAddress)
-        .update(addressNetwork(network, date))
-    } else if (dockExists && networkExists) {
-      await firestore
-        .collection("address")
-        .doc(targetAddress)
-        .update(appendAddress(network, date))
-    }
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-export async function firebaseWorkflow (address, networkName) {
-  await setMintingState(address, networkName);
-  await setMintingData(address, networkName);
-}
-
-async function verifyExistence(address, network) {
-  let dockExistence = false;
-  let networkExistence = false;
-  const doc = await firestore
-      .collection("address")
-      .doc(address)
-      .get();
-  if (doc.exists) {
-      dockExistence = true;
-      networkExistence = 
-          doc.data()[network] === undefined
-          ? false
-          : true;
-  }
-  return [ dockExistence, networkExistence ];
-};
-
 export async function getTimestamps() {
   let pendingAddress = {
     "polygon": [],
@@ -175,7 +97,7 @@ export async function getTimestamps() {
     "goerli": []
   }
   const docs = await firestore
-    .collection("address")
+    .collection("users")
     .limit(25)
     .get();
   
@@ -192,5 +114,59 @@ export async function getTimestamps() {
     }
   });
 
-  return [docs, pendingAddress];
+  return pendingAddress;
+}
+
+export async function updateMetadata(
+  userAddress, network, alchemyData, probNewLatest
+  ) {
+    const [ lastMinted, docExistence, networkExistence, queryData ] 
+      = await getLatestMint(userAddress);
+    const updateMinted = lastMinted > 0 
+      ? lastMinted < probNewLatest
+      : false;
+    if (!docExistence) {
+      await firestore
+        .collection("metadata")
+        .doc(userAddress)
+        .set(metadataSet(network, probNewLatest, alchemyData));
+    } else if (docExistence && !networkExistence && !updateMinted) {
+      await firestore
+        .collection("metadata")
+        .doc(userAddress)
+        .update(metadataSet(network, -1, alchemyData));
+    } else if (docExistence && !networkExistence && updateMinted) {
+      await firestore
+        .collection("metadata")
+        .doc(userAddress)
+        .update(metadataSet(network, probNewLatest, alchemyData));
+    } else if (docExistence && networkExistence && updateMinted) {
+      JSON.parse(alchemyData) === JSON.parse(queryData.data()[network])
+      ? await firestore
+          .collection("metadata")
+          .doc(userAddress)
+          .update({lastMinted: probNewLatest})
+      : await firestore
+          .collection("metadata")
+          .doc(userAddress)
+          .update(metadataSet(network, probNewLatest, alchemyData));
+    }
+}
+
+async function getLatestMint(address, network) {
+  let timeMinted;
+  let networkExists;
+  const doc = await firestore
+    .collection("metadata")
+    .doc(address)
+    .get();
+  const docExists = doc.exists;
+  if (docExists) {
+    timeMinted = new Date(doc.data()['lastMinted']);
+    networkExists = doc.data()[network] === undefined
+      ? false : true;
+  } else {
+    timeMinted = 0;
+  }
+  return [ timeMinted, docExists, networkExists, doc ]
 }
