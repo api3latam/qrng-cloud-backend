@@ -1,15 +1,33 @@
 import { Network } from "alchemy-sdk";
+import { getEnvVars } from "./utils.js";
+
+const getApiKey = (network) => {
+    if (network === "polygon") {
+        return getEnvVars("POLYGON_API");
+    } else {
+        try {
+            const url = getEnvVars(`${network.toUpperCase()}_URL`)
+            const splitted = url.split('/');
+            return splitted[splitted.length];
+        } catch (err) {
+            console.error(err);
+        }
+    }
+};
 
 export const alchemyConfigs = (networkName) => {
     if (networkName === "polygon") {
-        return { apiKey: process.env['NEXT_PUBLIC_POLYGON'],
+        return { apiKey: getApiKey('polygon'),
             network: Network.MATIC_MAINNET }
     } else if (networkName === "optimism") {
-        return { apiKey: process.env['NEXT_PUBLIC_OPTIMISM'],
+        return { apiKey: getApiKey('optimism'),
             network: Network.OPT_MAINNET }
     } else if (networkName === "arbitrum") {
-        return { apiKey: process.env['NEXT_PUBLIC_ARBITRUM'] ,
+        return { apiKey: getApiKey('arbitrum'),
             network: Network.ARB_MAINNET}
+    } else if (networkName === "goerli") {
+        return { apiKey: getApiKey('goerli'),
+            network: Network.ETH_GOERLI }
     } else {
         throw Error(`The given network ${networkName} is not available`);
     }
