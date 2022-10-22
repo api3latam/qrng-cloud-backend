@@ -15,19 +15,21 @@ export const alchemyConfigs = (networkName) => {
     }
 };
 
-export async function getTokenIds(userAddress, alchemyClient, contractAddress) {
-
-    const nftsForOwner = await alchemyClient.nft.getNftsForOwner({
-        owner: userAddress,
-        contractAddresses: [contractAddress]
-    });
-    const ownedNfts = nftsForOwner.ownedNfts;
-    const output = ownedNfts.map((token) => {
-        return {
-            id: token.tokenId,
-            uri: token.tokenUri.raw,
-            minted: timeLastUpdated
-        } 
-    })
-    return output;
+export async function getTokenIds(
+    userAddress, 
+    alchemyClient, 
+    contractAddress) {
+        const nftsForOwner = await alchemyClient.nft.getNftsForOwner({
+            owner: userAddress,
+            contractAddresses: [contractAddress]
+        });
+        const ownedNfts = nftsForOwner.ownedNfts;
+        const output = ownedNfts.map((token) => {
+            return {
+                id: token.tokenId,
+                uri: token.tokenUri.raw,
+                minted: new Date(token.timeLastUpdated)
+            } 
+        })
+        return output;
 };
