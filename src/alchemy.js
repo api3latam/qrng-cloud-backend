@@ -1,4 +1,5 @@
 import { Network } from "alchemy-sdk";
+import { utils } from "ethers";
 import { getEnvVars } from "./utils.js";
 
 const getApiKey = (network) => {
@@ -37,12 +38,15 @@ export async function getTokenIds(
     userAddress, 
     alchemyClient, 
     contractAddress) {
-        const nftsForOwner = await alchemyClient.nft.getNftsForOwner({
-            owner: userAddress,
-            contractAddresses: [contractAddress]
-        });
+        const nftsForOwner = await alchemyClient.nft.getNftsForOwner(
+            userAddress);
         const ownedNfts = nftsForOwner.ownedNfts;
-        const output = ownedNfts.map((token) => {
+        const filter = ownedNfts.filter((token) => {
+            if (utils.getAddress(token.contract.address) === contractAddress) {
+                return token
+            }
+        });
+        const output = filter.map((token) => {
             return {
                 id: token.tokenId,
                 uri: token.tokenUri.raw,
