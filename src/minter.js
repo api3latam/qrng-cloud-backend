@@ -2,7 +2,7 @@ import { exit } from "process";
 import { utils } from "ethers";
 import { getContract } from  "./contracts.js";
 import { contractAddresses } from "./network.js";
-import { firebaseWorkflow, getAddresses } from "./firebase.js";
+import { setMintingState, getAddresses } from "./firebase.js";
 
 const main = async () => {
     console.log('Starting process...\n')
@@ -33,7 +33,7 @@ const main = async () => {
                     let receipt = await tx.wait();
                     txHash = receipt.transactionHash;
                 }
-                await firebaseWorkflow(address, network);
+                await setMintingState(address, network);
             }
             console.log(`Done for network: ${network}\n`);
         } catch (err) {
