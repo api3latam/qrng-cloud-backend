@@ -19,7 +19,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-const firestore = firebase.firestore();
+export const firestore = firebase.firestore();
 const enableGoerli = getEnvVars("ENABLE_TEST") === "true" ? true : false;
 
 const networkUpdate = (networkName) => {
@@ -89,38 +89,23 @@ export async function setMintingState(targetAddress, network) {
   }
 };
 
-export async function getTimestamps() {
-  let pendingAddress = {
-    "polygon": [],
-    "optimism": [],
-    "arbitrum": [],
-    "goerli": []
-  }
+export async function getTimestamps(network) {
+  let addresses = [];
   const docs = await firestore
     .collection("users")
-    .limit(25)
+    .where(`updated.${network}`, '!=', 'true')
     .get();
-  
-  docs.forEach(doc => {
-    const dictKeys = Object.keys(doc.data());
-    if ("polygon" in dictKeys) {
-      pendingAddress["polygon"].append(doc.id);
-    } else if ("optimism" in dictKeys) {
-      pendingAddress["optimism"].apend(doc.id);
-    } else if ("arbitrum" in dictKeys) {
-      pendingAddress["arbitrum"].apend(doc.id);
-    } else if ("goerli" in dictKeys && enableGoerli) {
-      pendingAddress["goerli"].append(doc.id);
-    }
-  });
 
-  return pendingAddress;
+  docs.forEach((doc) => {
+    addresses.push(doc.id);
+  })
+  return addresses;
 }
 
 export async function updateMetadata(
   userAddress, network, alchemyData, probNewLatest
   ) {
-    const [ lastMinted, docExistence, networkExistence, queryData ] 
+    const [ lastMinted, docExistence, networkExistence ] 
       = await getLatestMint(userAddress);
     const updateMinted = lastMinted > 0 
       ? lastMinted < probNewLatest
@@ -140,16 +125,6 @@ export async function updateMetadata(
         .collection("metadata")
         .doc(userAddress)
         .update(metadataSet(network, probNewLatest, alchemyData));
-    } else if (docExistence && networkExistence && updateMinted) {
-      JSON.parse(alchemyData) === JSON.parse(queryData.data()[network])
-      ? await firestore
-          .collection("metadata")
-          .doc(userAddress)
-          .update({lastMinted: probNewLatest})
-      : await firestore
-          .collection("metadata")
-          .doc(userAddress)
-          .update(metadataSet(network, probNewLatest, alchemyData));
     }
 }
 
@@ -168,5 +143,5 @@ async function getLatestMint(address, network) {
   } else {
     timeMinted = 0;
   }
-  return [ timeMinted, docExists, networkExists, doc ]
+  return [ timeMinted, docExists, networkExists ]
 }
