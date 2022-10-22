@@ -36,6 +36,20 @@ const networkUpdate = (networkName) => {
   }
 }
 
+const metaUpdate = (networkName) => {
+  if (networkName === "optimism") {
+      return { 'updated.optimism': true }
+  } else if (networkName === "polygon") {
+      return { 'updated.polygon': true }
+  } else if (networkName === "arbitrum") {
+      return { 'updated.arbitrum': true }
+  } else if (networkName === "goerli" && enableGoerli) {
+      return { 'updated.goerli': true }
+  } else {
+      throw Error(`The given network ${networkName} is not available`);
+  }
+}
+
 const metadataSet = (networkName, timestamp, tokenData) => {
   if (networkName === "optimism") {
     return timestamp >= 0 
@@ -144,4 +158,11 @@ async function getLatestMint(address, network) {
     timeMinted = 0;
   }
   return [ timeMinted, docExists, networkExists ]
+};
+
+export async function updateMetaStatus(userAddress, network) {
+  await firestore
+      .collection("users")
+      .doc(userAddress)
+      .update(metaUpdate(network));
 }
